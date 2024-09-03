@@ -12,9 +12,9 @@ func main() {
 		fileserverHits: 0,
 	}
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(http.FileServer(http.Dir("./")))))
-	mux.HandleFunc("GET /healthz", handlerReadiness)
-	mux.HandleFunc("GET /metrics", cfg.handleNumberOfRequests)
-	mux.HandleFunc("/reset", cfg.resetCounter)
+	mux.HandleFunc("GET /api/healthz", handlerReadiness)
+	mux.HandleFunc("GET /admin/metrics", cfg.handleNumberOfRequests)
+	mux.HandleFunc("GET /api/reset", cfg.resetCounter)
 
 	server := &http.Server{
 		Addr:    ":" + port,
