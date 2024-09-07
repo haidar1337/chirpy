@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -15,20 +17,32 @@ func main() {
 		os.Remove("./database.json")
 	}
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Failed to load env file: %w", err)
+		return
+	}
 
 	port := "8080"
 	mux := http.NewServeMux()
+	jwtSecret := os.Getenv("JWT_SECRET")
 	cfg := apiConfig{
 		fileserverHits: 0,
+		jwtSecret: jwtSecret,
 	}
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(http.FileServer(http.Dir("./")))))
+
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /admin/metrics", cfg.handleNumberOfRequests)
 	mux.HandleFunc("GET /api/reset", cfg.resetCounter)
+
 	mux.HandleFunc("POST /api/chirps", handlePostChirp)
 	mux.HandleFunc("GET /api/chirps", fetchChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpId}", fetchChirpByID)
-	mux.HandleFunc("POST /api/users", createUser)
+
+	mux.HandleFunc("POST /api/users", cfg.handlerUsersCreate)
+	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
+	mux.HandleFunc("PUT /api/users", cfg.handlerUsersUpdate)
 
 	server := &http.Server{
 		Addr:    ":" + port,

@@ -1,3 +1,4 @@
 *.exe
 chirpy
 database.json
+.env
