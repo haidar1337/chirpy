@@ -7,7 +7,8 @@ import (
 
 type apiConfig struct {
 	fileserverHits int
-	jwtSecret string
+	jwtSecret      string
+	polkaKey       string
 }
 
 func (cfg *apiConfig) handleNumberOfRequests(w http.ResponseWriter, req *http.Request) {

@@ -97,3 +97,16 @@ func MakeRefreshToken() (database.RefreshToken, error) {
 		Token:          hex.EncodeToString(dat),
 	}, nil
 }
+
+func GetAPIKey(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+	if authHeader == "" {
+		return "", ErrNoAuthHeaderIncluded
+	}
+	strs := strings.Split(authHeader, " ")
+	if len(strs) < 2 || len(strs) > 2 {
+		return "", errors.New("Compromised authorization header")
+	}
+
+	return strs[1], nil
+}

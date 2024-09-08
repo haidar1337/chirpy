@@ -17,6 +17,7 @@ type User struct {
 	Email        string       `json:"email"`
 	Password     string       `json:"password"`
 	RefreshToken RefreshToken `json:"refresh_token"`
+	IsChirpyRed  bool         `json:"is_chirpy_red"`
 }
 
 func (db *DB) CreateUser(email string, password string) (User, error) {
@@ -27,9 +28,10 @@ func (db *DB) CreateUser(email string, password string) (User, error) {
 
 	id := len(dbStructure.Users) + 1
 	user := User{
-		ID:       id,
-		Email:    email,
-		Password: password,
+		ID:          id,
+		Email:       email,
+		Password:    password,
+		IsChirpyRed: false,
 	}
 	dbStructure.Users[id] = user
 	err = db.writeDB(dbStructure)
@@ -48,7 +50,7 @@ func (db *DB) GetUsers() ([]User, error) {
 
 	users := make([]User, 0)
 	for _, u := range dbStructure.Users {
-		users = append(users, User{ID: u.ID, Email: u.Email})
+		users = append(users, User{ID: u.ID, Email: u.Email, IsChirpyRed: u.IsChirpyRed})
 	}
 
 	return users, nil
@@ -175,6 +177,27 @@ func (db *DB) RevokeToken(token string) error {
 		Email:        user.Email,
 		Password:     user.Password,
 		RefreshToken: RefreshToken{},
+	}
+	structure.Users[user.ID] = updated
+	err = db.writeDB(structure)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *DB) UpgradeUser(user User) error {
+	structure, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	updated := User{
+		ID:          user.ID,
+		Email:       user.Email,
+		Password:    user.Password,
+		IsChirpyRed: true,
 	}
 	structure.Users[user.ID] = updated
 	err = db.writeDB(structure)

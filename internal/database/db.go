@@ -9,18 +9,18 @@ import (
 
 type DB struct {
 	path string
-	mux *sync.RWMutex
+	mux  *sync.RWMutex
 }
 
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
-	Users map[int]User `json:"users"`
+	Users  map[int]User  `json:"users"`
 }
 
 func NewDB(path string) (*DB, error) {
 	db := &DB{
 		path: path,
-		mux:   &sync.RWMutex{},
+		mux:  &sync.RWMutex{},
 	}
 	err := db.ensureDB()
 	return db, err
@@ -46,7 +46,7 @@ func (db *DB) loadDB() (DBStructure, error) {
 func (db *DB) createDB() error {
 	dbStructure := DBStructure{
 		Chirps: map[int]Chirp{},
-		Users: map[int]User{},
+		Users:  map[int]User{},
 	}
 	return db.writeDB(dbStructure)
 }

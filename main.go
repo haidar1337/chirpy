@@ -26,9 +26,11 @@ func main() {
 	port := "8080"
 	mux := http.NewServeMux()
 	jwtSecret := os.Getenv("JWT_SECRET")
+	polkaKey := os.Getenv("POLKA_KEY")
 	cfg := apiConfig{
 		fileserverHits: 0,
 		jwtSecret:      jwtSecret,
+		polkaKey:       polkaKey,
 	}
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(http.FileServer(http.Dir("./")))))
 
@@ -48,6 +50,7 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", cfg.handlerRefreshToken)
 	mux.HandleFunc("POST /api/revoke", handlerRevoke)
 
+	mux.HandleFunc("POST /api/polka/webhooks", cfg.handlerUpgradeWebhook)
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
