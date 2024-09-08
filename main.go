@@ -28,7 +28,7 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	cfg := apiConfig{
 		fileserverHits: 0,
-		jwtSecret: jwtSecret,
+		jwtSecret:      jwtSecret,
 	}
 	mux.Handle("/app/", http.StripPrefix("/app", cfg.middlewareMetricsInc(http.FileServer(http.Dir("./")))))
 
@@ -44,6 +44,9 @@ func main() {
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("PUT /api/users", cfg.handlerUsersUpdate)
 
+	mux.HandleFunc("POST /api/refresh", cfg.handlerRefreshToken)
+	mux.HandleFunc("POST /api/revoke", handlerRevoke)
+
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
@@ -57,7 +60,3 @@ func handlerReadiness(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK) // 200
 	w.Write([]byte("OK"))
 }
-
-
-
-

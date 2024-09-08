@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/haidar1337/chirpy/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,13 +32,13 @@ func CheckPasswordHash(password, hash string) error {
 }
 
 // MakeJWT -
-func MakeJWT(userID int, tokenSecret string, expiresIn time.Duration) (string, error) {
+func MakeJWT(userID int, tokenSecret string) (string, error) {
 	signingKey := []byte(tokenSecret)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		Issuer:    "chirpy",
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expiresIn)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 		Subject:   fmt.Sprintf("%d", userID),
 	})
 	return token.SignedString(signingKey)
@@ -85,11 +86,14 @@ func GetBearerToken(headers http.Header) (string, error) {
 	return splitAuth[1], nil
 }
 
-func MakeRefreshToken() (string, error) {
+func MakeRefreshToken() (database.RefreshToken, error) {
 	dat := make([]byte, 32)
 	_, err := rand.Read(dat)
 	if err != nil {
-		return "", err
+		return database.RefreshToken{}, err
 	}
-	return hex.EncodeToString(dat), nil
+	return database.RefreshToken{
+		ExpirationDate: *jwt.NewNumericDate(time.Now().UTC().Add(time.Hour * 1440)),
+		Token:          hex.EncodeToString(dat),
+	}, nil
 }

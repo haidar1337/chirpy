@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/haidar1337/chirpy/internal/auth"
 	"github.com/haidar1337/chirpy/internal/database"
@@ -11,13 +10,12 @@ import (
 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Password         string `json:"password"`
-		Email            string `json:"email"`
-		ExpiresInSeconds int    `json:"expires_in_seconds"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
 	}
 	type response struct {
 		database.User
-		Token string `json:"token"`
+		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
 	}
 
@@ -46,38 +44,31 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defaultExpiration := 60 * 60 * 24
-	if params.ExpiresInSeconds == 0 {
-		params.ExpiresInSeconds = defaultExpiration
-	} else if params.ExpiresInSeconds > defaultExpiration {
-		params.ExpiresInSeconds = defaultExpiration
-	}
-
-	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret, time.Duration(params.ExpiresInSeconds)*time.Second)
+	token, err := auth.MakeJWT(user.ID, cfg.jwtSecret)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create JWT")
 		return
 	}
 	hexToken := user.RefreshToken
-	if hexToken == "" {
+	if hexToken.Token == "" {
 		hexToken, err = auth.MakeRefreshToken()
 		if err != nil {
 			respondWithError(w, 500, "failed to create a refresh token")
 			return
 		}
-		err := db.UpdateRefreshToken(user.ID, hexToken)
+		err := db.UpdateRefreshToken(user.ID, hexToken.Token)
 		if err != nil {
 			respondWithError(w, 500, "failed to save refresh token")
 			return
 		}
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, response{
 		User: database.User{
 			ID:    user.ID,
 			Email: user.Email,
 		},
-		Token: token,
-		RefreshToken: hexToken,
+		Token:        token,
+		RefreshToken: hexToken.Token,
 	})
 }
