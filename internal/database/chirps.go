@@ -7,11 +7,12 @@ import (
 )
 
 type Chirp struct {
-	ID int `json:"id"`
-	Body string `json:"body"`
+	ID        int    `json:"id"`
+	Body      string `json:"body"`
+	Author_ID int    `json:"author_id"`
 }
 
-func (db *DB) CreateChirp(body string) (Chirp, error) {
+func (db *DB) CreateChirp(body string, authorID int) (Chirp, error) {
 
 	if len(body) > 140 {
 		return Chirp{}, errors.New("Chirp is too long")
@@ -32,10 +33,11 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 		return Chirp{}, err
 	}
 	chirp := Chirp{
-		ID: len(dbStructure.Chirps) + 1,
-		Body: body,
+		ID:        len(dbStructure.Chirps) + 1,
+		Body:      body,
+		Author_ID: authorID,
 	}
-	dbStructure.Chirps[len(dbStructure.Chirps) + 1] = chirp
+	dbStructure.Chirps[len(dbStructure.Chirps)+1] = chirp
 	err = db.writeDB(dbStructure)
 	if err != nil {
 		return Chirp{}, err
@@ -45,14 +47,14 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 }
 
 func (db *DB) GetChirps() ([]Chirp, error) {
-	dbStructure, err  := db.loadDB()
+	dbStructure, err := db.loadDB()
 	if err != nil {
 		return nil, err
 	}
 
 	chirps := make([]Chirp, 0)
 	for _, chirp := range dbStructure.Chirps {
-		chirps = append(chirps, Chirp{ID: chirp.ID, Body: chirp.Body})
+		chirps = append(chirps, Chirp{ID: chirp.ID, Body: chirp.Body, Author_ID: chirp.Author_ID})
 	}
 
 	sort.Slice(chirps, func(i int, j int) bool {
@@ -74,6 +76,38 @@ func (db *DB) GetChirp(Id int) (Chirp, error) {
 	chirp, ok := dbStructure.Chirps[Id]
 	if !ok {
 		return Chirp{}, errors.New("Chirp not found")
+	}
+
+	return chirp, nil
+}
+
+func (db *DB) DeleteChirp(id, authorId int) error {
+	structure, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	chirp, err := db.ValidateChirp(id, authorId)
+	if err != nil {
+		return err
+	}
+
+	delete(structure.Chirps, chirp.ID)
+	err = db.writeDB(structure)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *DB) ValidateChirp(id, authorId int) (Chirp, error) {
+	chirp, err := db.GetChirp(id)
+	if err != nil {
+		return Chirp{}, err
+	}
+	if chirp.Author_ID != authorId {
+		return Chirp{}, errors.New("Unauthorized")
 	}
 
 	return chirp, nil
