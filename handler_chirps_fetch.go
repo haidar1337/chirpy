@@ -44,11 +44,34 @@ func fetchChirps(w http.ResponseWriter, req *http.Request) {
 		respondWithError(w, 500, "Failed to create database")
 		return
 	}
-
-	chirps, err := db.GetChirps()
-	if err != nil {
-		respondWithError(w, 500, "Failed to read chirps")
-		return
+	var chirps []database.Chirp
+	authorIdQuery := req.URL.Query().Get("author_id")
+	sortingQuery := req.URL.Query().Get("sort")
+	if authorIdQuery != "" {
+		authorId, err := strconv.Atoi(authorIdQuery)
+		if err != nil {
+			respondWithError(w, 400, "Invalid author id, must be an integer")
+			return
+		}
+		if sortingQuery != "" {
+			chirps, err = db.GetChirpsByAuthorID(authorId, sortingQuery)
+		} else {
+			chirps, err = db.GetChirpsByAuthorID(authorId, "asc")
+		}
+		if err != nil {
+			respondWithError(w, 400, "sorting query must be desc or asc")
+			return
+		}
+	} else {
+		if sortingQuery != "" {
+			chirps, err = db.GetChirps(sortingQuery)
+		} else {
+			chirps, err = db.GetChirps("asc")
+		}
+		if err != nil {
+			respondWithError(w, 400, "Sorting query must be asc or desc")
+			return
+		}
 	}
 
 	respondWithJSON(w, 200, chirps)
