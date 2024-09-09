@@ -56,7 +56,7 @@ Response Body:
 Upgrades a user account to Chirpy Red
 
 Headers:
-```Authorization: Bearer {jwtToken}```
+```Authorization: Bearer {JWT_TOKEN}```
 
 Response Body:
 ```json
@@ -66,3 +66,26 @@ Response Body:
   "is_chirpy_red": true
 }
 ```
+
+### POST /api/refresh
+Refreshs a stateless JWT token, which persists for 1 hour, using a stateful refresh token, which persists for 60 days
+
+Headers:
+```Authorization: Bearer {REFRESH_TOKEN}```
+
+Response Body:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaGlycHkiLCJzdWIiOiIxIiwiZXhwIjoxNzI1OTAwMTAzLCJpYXQiOjE3MjU4OTY1MDN9.Tqc8Zow-MplmxfYYfqZCWCyBrzgDWCZU8lWdhNTDUNI"
+}
+```
+
+### POST /api/revoke
+Revokes a refresh token
+
+Headers:
+```Authorization: Bearer {REFRESH_TOKEN}```
+
+Response Status Code: 204 No Content
+
+
