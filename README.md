@@ -95,6 +95,7 @@ Creates a new chirp
 
 Headers:
 ```Authorization: Bearer {JWT_TOKEN}```
+
 Request Body:
 ```json
 {
@@ -130,8 +131,11 @@ Response Body:
 ```
 
 Optional Query Parameters:
+
 ```authorId={ID}```, ```sort={desc || asc}```
+
 Example Request:
+
 ```{host}:{port?}/api/chirps?authorId=1&sort=desc```
 
 ### GET /api/chirp/{CHIRP_ID}
