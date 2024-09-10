@@ -88,4 +88,68 @@ Headers:
 
 Response Status Code: 204 No Content
 
+## Chirp Resource
+
+### POST /api/chirps
+Creates a new chirp
+
+Headers:
+```Authorization: Bearer {JWT_TOKEN}```
+Request Body:
+```json
+{
+  "body": "This is a new chirp!"
+}
+```
+Response Body:
+```json
+{
+  "id": 1,
+  "body": "This is a new chirp!",
+  "author_id": 1
+}
+```
+
+### GET /api/chirps
+Get all chirps in the database
+
+Response Body:
+```json
+[
+  {
+    "id": 1,
+    "body": "Chirp!",
+    "author_id": 1
+  },
+  {
+    "id": 2,
+    "body": "Chirpyyy",
+    "author_id": 1
+  }
+]
+```
+
+Optional Query Parameters:
+```authorId={ID}```, ```sort={desc || asc}```
+Example Request:
+```{host}:{port?}/api/chirps?authorId=1&sort=desc```
+
+### GET /api/chirp/{CHIRP_ID}
+Get a chirp by its ID
+
+Response Body:
+```json
+{
+    "id": 2,
+    "body": "Chirpyyy",
+    "author_id": 1
+}
+```
+
+### DELETE /api/chirps/{CHIRP_ID}
+
+Headers:
+```Authorization: Bearer {JWT_TOKEN}```
+
+Response Status Code: 204 No Content
 
