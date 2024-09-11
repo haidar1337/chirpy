@@ -157,3 +157,12 @@ Headers:
 
 Response Status Code: 204 No Content
 
+## Webhooks
+
+### POST /api/polka/webhooks
+A webhook sent to the server when a user upgrades to chirpy red
+
+Headers:
+```Authorization: APIKey {API_KEY}```
+
+Response Status Code: 204 No Content
